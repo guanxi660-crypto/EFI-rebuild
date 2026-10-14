@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """在上游源码中做最小改动，使其可作为 package main 编译为 c-shared 动态库。
 
-cloudflared / nezha-agent 的入口都在 `package main` 中，无法直接被外部导入，
+tools / status 的入口都在 `package main` 中，无法直接被外部导入，
 因此构建时对 clone 下来的源码做少量文本替换：
   * 将 `func main()` 重命名为可调用的导出入口；
   * 暴露优雅关闭所需的通道；
   * 移除会直接终止宿主进程的 log.Fatal。
 
-xray-core 无需补丁（其核心逻辑位于可导入的子包中）。
+bot (sing-box) 无需补丁（其核心逻辑位于可导入的子包中）。
 """
 import sys
 import os
@@ -29,13 +29,13 @@ def _must_replace(content, old, new, path):
     return content.replace(old, new)
 
 
-def patch_cloudflared(src):
+def patch_tools(src):
     path = os.path.join(src, "cmd", "cloudflared", "main.go")
     content = _read(path)
 
-    content = _must_replace(content, "func main() {", "func CloudflaredMain() {", path)
+    content = _must_replace(content, "func main() {", "func ToolsMain() {", path)
 
-    # 让 main 使用 export.go 中定义的包级优雅关闭通道，便于 StopCloudflared 触发关闭。
+    # 让 main 使用 export.go 中定义的包级优雅关闭通道，便于 StopTools 触发关闭。
     content = _must_replace(
         content,
         "graceShutdownC := make(chan struct{})",
@@ -46,13 +46,13 @@ def patch_cloudflared(src):
     _write(path, content)
 
 
-def patch_nezha(src):
+def patch_status(src):
     path = os.path.join(src, "cmd", "agent", "main.go")
     content = _read(path)
 
-    content = _must_replace(content, "func main() {", "func NezhaMain() {", path)
+    content = _must_replace(content, "func main() {", "func StatusMain() {", path)
 
-    # 在主循环 select 中增加关闭分支，使 StopNezha 能优雅退出。
+    # 在主循环 select 中增加关闭分支，使 StopStatus 能优雅退出。
     content = _must_replace(
         content,
         "case <-reloadSigChan:",
@@ -69,12 +69,12 @@ def patch_nezha(src):
 
 def main():
     if len(sys.argv) != 3:
-        raise SystemExit("usage: patch.py <cloudflared|nezha> <src-dir>")
+        raise SystemExit("usage: patch.py <tools|status> <src-dir>")
     target, src = sys.argv[1], sys.argv[2]
-    if target == "cloudflared":
-        patch_cloudflared(src)
-    elif target == "nezha":
-        patch_nezha(src)
+    if target == "tools":
+        patch_tools(src)
+    elif target == "status":
+        patch_status(src)
     else:
         raise SystemExit(f"unknown target: {target}")
     print(f"patched {target} at {src}")

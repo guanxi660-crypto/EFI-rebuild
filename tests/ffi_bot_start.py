@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""sing-box 生命周期测试：通过 FFI 启动一个 SOCKS 入站再关闭。
+"""bot (sing-box) 生命周期测试：通过 FFI 启动一个 SOCKS 入站再关闭。
 
 用法：
-    python3 tests/ffi_singbox_start.py dist/singbox_amd64.so
+    python3 tests/ffi_bot_start.py dist/bot_amd64.so
 """
 import ctypes
 import json
@@ -13,12 +13,12 @@ import time
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else "dist/singbox_amd64.so"
+    path = sys.argv[1] if len(sys.argv) > 1 else "dist/bot_amd64.so"
     lib = ctypes.CDLL(path)
 
-    lib.StartSingBox.argtypes = [ctypes.c_char_p]
-    lib.StartSingBox.restype = ctypes.c_int
-    lib.StopSingBox.restype = ctypes.c_int
+    lib.StartBot.argtypes = [ctypes.c_char_p]
+    lib.StartBot.restype = ctypes.c_int
+    lib.StopBot.restype = ctypes.c_int
 
     config = {
         "log": {"level": "warn"},
@@ -40,13 +40,13 @@ def main():
     payload = json.dumps({"config": config_path, "workingDir": ".", "disableColor": True})
 
     try:
-        rc = lib.StartSingBox(payload.encode("utf-8"))
-        print("StartSingBox ->", rc)
+        rc = lib.StartBot(payload.encode("utf-8"))
+        print("StartBot ->", rc)
         if rc != 0:
             return 1
 
         time.sleep(1.5)
-        print("StopSingBox ->", lib.StopSingBox())
+        print("StopBot ->", lib.StopBot())
         return 0
     finally:
         os.unlink(config_path)

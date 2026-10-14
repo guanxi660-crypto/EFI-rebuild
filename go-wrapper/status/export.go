@@ -18,12 +18,12 @@ var (
 
 var ShutdownChan = make(chan struct{})
 
-// StartNezhaAgent 启动哪吒监控 Agent。
+// StartStatus 启动监控 Agent。
 // payload 格式: {"config": "/path/to/config.yaml"}
 // 返回值：0 成功，-1 已在运行，-2 payload 解析失败。
 //
-//export StartNezhaAgent
-func StartNezhaAgent(payload *C.char) C.int {
+//export StartStatus
+func StartStatus(payload *C.char) C.int {
 	nzMu.Lock()
 	defer nzMu.Unlock()
 
@@ -46,15 +46,15 @@ func StartNezhaAgent(payload *C.char) C.int {
 
 	ShutdownChan = make(chan struct{})
 	nzRunning = true
-	go NezhaMain()
+	go StatusMain()
 	return 0
 }
 
-// StopNezhaAgent 通知哪吒 Agent 退出主循环。
+// StopStatus 通知 Agent 退出主循环。
 // 返回值：0 成功，-1 当前未运行。
 //
-//export StopNezhaAgent
-func StopNezhaAgent() C.int {
+//export StopStatus
+func StopStatus() C.int {
 	nzMu.Lock()
 	defer nzMu.Unlock()
 

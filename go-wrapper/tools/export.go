@@ -18,12 +18,12 @@ var (
 
 var GraceShutdownC = make(chan struct{})
 
-// StartCloudflared 以 args JSON payload 启动 cloudflared 隧道。
+// StartTools 以 args JSON payload 启动隧道。
 // payload 格式: {"args": ["tunnel", "--no-autoupdate", "run", "--token", "..."]}
 // 返回值：0 成功，-1 已在运行，-2 payload 解析失败。
 //
-//export StartCloudflared
-func StartCloudflared(payload *C.char) C.int {
+//export StartTools
+func StartTools(payload *C.char) C.int {
 	cfMu.Lock()
 	defer cfMu.Unlock()
 
@@ -46,15 +46,15 @@ func StartCloudflared(payload *C.char) C.int {
 	os.Args = append([]string{"cloudflared"}, p.Args...)
 
 	cfRunning = true
-	go CloudflaredMain()
+	go ToolsMain()
 	return 0
 }
 
-// StopCloudflared 触发 cloudflared 优雅关闭。
+// StopTools 触发优雅关闭。
 // 返回值：0 成功，-1 当前未运行。
 //
-//export StopCloudflared
-func StopCloudflared() C.int {
+//export StopTools
+func StopTools() C.int {
 	cfMu.Lock()
 	defer cfMu.Unlock()
 

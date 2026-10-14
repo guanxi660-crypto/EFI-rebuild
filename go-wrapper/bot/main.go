@@ -104,8 +104,8 @@ func miniContext(ctx context.Context) context.Context {
 	return box.Context(ctx, inReg, outReg, epReg, dnsReg, svcReg, certReg)
 }
 
-//export StartSingBox
-func StartSingBox(payload *C.char) C.int {
+//export StartBot
+func StartBot(payload *C.char) C.int {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -153,8 +153,8 @@ func StartSingBox(payload *C.char) C.int {
 	return 0
 }
 
-//export StopSingBox
-func StopSingBox() C.int {
+//export StopBot
+func StopBot() C.int {
 	mu.Lock()
 	defer mu.Unlock()
 

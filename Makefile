@@ -1,19 +1,19 @@
 ARCHS ?= amd64 arm64
 export ARCHS
 
-.PHONY: all singbox cloudflared nezha clean
+.PHONY: all bot tools status clean
 
 all:
 	./build.sh all
 
-singbox:
-	./build.sh singbox
+bot:
+	./build.sh bot
 
-cloudflared:
-	./build.sh cloudflared
+tools:
+	./build.sh tools
 
-nezha:
-	./build.sh nezha
+status:
+	./build.sh status
 
 clean:
 	rm -rf dist .build

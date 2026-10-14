@@ -2,7 +2,7 @@
 """FFI 冒烟测试：用 ctypes 加载编译出的 .so 并校验导出的 C 接口。
 
 用法：
-    python3 tests/ffi_smoke.py dist/singbox_amd64.so
+    python3 tests/ffi_smoke.py dist/bot_amd64.so
 不传参数时遍历 dist/ 下所有 .so。
 """
 import ctypes
@@ -11,9 +11,9 @@ import os
 import sys
 
 EXPORTS = {
-    "singbox": ["StartSingBox", "StopSingBox"],
-    "cloudflared": ["StartCloudflared", "StopCloudflared"],
-    "nezha": ["StartNezhaAgent", "StopNezhaAgent"],
+    "bot": ["StartBot", "StopBot"],
+    "tools": ["StartTools", "StopTools"],
+    "status": ["StartStatus", "StopStatus"],
 }
 
 

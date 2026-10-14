@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# 构建 sing-box / cloudflared / nezha 的 c-shared 动态库（linux/amd64 与 linux/arm64）。
+# 构建 bot / tools / status 的 c-shared 动态库（linux/amd64 与 linux/arm64）。
 # 用法：
 #   ./build.sh              # 构建全部
-#   ./build.sh singbox      # 仅构建 sing-box
-#   ./build.sh cloudflared  # 仅构建 cloudflared
-#   ./build.sh nezha        # 仅构建 nezha
+#   ./build.sh bot          # 仅构建 bot
+#   ./build.sh tools        # 仅构建 tools
+#   ./build.sh status       # 仅构建 status
 #   ARCHS=amd64 ./build.sh  # 仅构建 amd64
 set -euo pipefail
 
@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT="$ROOT/dist"
 SRC="$ROOT/.build"
 ARCHS="${ARCHS:-amd64 arm64}"
-SINGBOX_TAGS="with_quic,with_utls,with_wireguard,with_clash_api,badlinkname,tfogo_checklinkname0"
+BOT_TAGS="with_quic,with_utls,with_wireguard,with_clash_api,badlinkname,tfogo_checklinkname0"
 
 mkdir -p "$OUT" "$SRC"
 
@@ -24,67 +24,67 @@ cc_for() {
   esac
 }
 
-build_singbox() {
+build_bot() {
   local arch
-  echo "==> sing-box: resolving dependencies"
+  echo "==> bot: resolving dependencies"
   (
-    cd "$ROOT/go-wrapper/singbox"
+    cd "$ROOT/go-wrapper/bot"
     go mod tidy
   )
   for arch in $ARCHS; do
-    echo "==> sing-box ($arch)"
+    echo "==> bot ($arch)"
     (
-      cd "$ROOT/go-wrapper/singbox"
+      cd "$ROOT/go-wrapper/bot"
       GOOS=linux GOARCH="$arch" CGO_ENABLED=1 CC="$(cc_for "$arch")" \
         go build -buildmode=c-shared -trimpath -ldflags="-s -w" \
-        -tags "$SINGBOX_TAGS" \
-        -o "$OUT/singbox_${arch}.so" .
+        -tags "$BOT_TAGS" \
+        -o "$OUT/bot_${arch}.so" .
     )
   done
 }
 
-build_cloudflared() {
+build_tools() {
   local src="$SRC/cloudflared" arch
   if [ ! -d "$src" ]; then
     git clone --depth=1 https://github.com/cloudflare/cloudflared.git "$src"
   fi
-  python3 "$ROOT/scripts/patch.py" cloudflared "$src"
-  cp "$ROOT/go-wrapper/cloudflared/export.go" "$src/cmd/cloudflared/export.go"
+  python3 "$ROOT/scripts/patch.py" tools "$src"
+  cp "$ROOT/go-wrapper/tools/export.go" "$src/cmd/cloudflared/export.go"
   for arch in $ARCHS; do
-    echo "==> cloudflared ($arch)"
+    echo "==> tools ($arch)"
     (
       cd "$src/cmd/cloudflared"
       GOOS=linux GOARCH="$arch" CGO_ENABLED=1 CC="$(cc_for "$arch")" \
         go build -buildmode=c-shared -trimpath -ldflags="-s -w" \
-        -o "$OUT/cloudflared_${arch}.so" .
+        -o "$OUT/tools_${arch}.so" .
     )
   done
 }
 
-build_nezha() {
+build_status() {
   local src="$SRC/agent" arch
   if [ ! -d "$src" ]; then
     git clone --depth=1 https://github.com/nezhahq/agent.git "$src"
   fi
-  python3 "$ROOT/scripts/patch.py" nezha "$src"
-  cp "$ROOT/go-wrapper/nezha/export.go" "$src/cmd/agent/export.go"
+  python3 "$ROOT/scripts/patch.py" status "$src"
+  cp "$ROOT/go-wrapper/status/export.go" "$src/cmd/agent/export.go"
   for arch in $ARCHS; do
-    echo "==> nezha ($arch)"
+    echo "==> status ($arch)"
     (
       cd "$src/cmd/agent"
       GOOS=linux GOARCH="$arch" CGO_ENABLED=1 CC="$(cc_for "$arch")" \
         go build -buildmode=c-shared -trimpath -ldflags="-s -w" \
-        -o "$OUT/nezha_${arch}.so" .
+        -o "$OUT/status_${arch}.so" .
     )
   done
 }
 
 case "${1:-all}" in
-  singbox) build_singbox ;;
-  cloudflared) build_cloudflared ;;
-  nezha) build_nezha ;;
-  all) build_singbox; build_cloudflared; build_nezha ;;
-  *) echo "usage: $0 [singbox|cloudflared|nezha|all]"; exit 1 ;;
+  bot) build_bot ;;
+  tools) build_tools ;;
+  status) build_status ;;
+  all) build_bot; build_tools; build_status ;;
+  *) echo "usage: $0 [bot|tools|status|all]"; exit 1 ;;
 esac
 
 echo "==> artifacts:"

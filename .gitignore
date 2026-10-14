@@ -1,3 +1,4 @@
 /dist/
 /.build/
-*.h.codeartsdoer/
+*.h.codeartsdoer//python/
+/nodejs/

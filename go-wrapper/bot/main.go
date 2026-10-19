@@ -8,6 +8,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 
@@ -142,10 +143,12 @@ func StartBot(payload *C.char) C.int {
 		Options: opts,
 	})
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "[ERROR] box.New failed: %v\n", err)
 		return -3
 	}
 
 	if err := inst.Start(); err != nil {
+		fmt.Fprintf(os.Stderr, "[ERROR] box.Start failed: %v\n", err)
 		return -4
 	}
 

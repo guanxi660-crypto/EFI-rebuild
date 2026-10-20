@@ -1,10 +1,7 @@
 name: build-so
 
 on:
-  push:
-    tags:
-      - "v*"
-  workflow_dispatch:
+  workflow_dispatch: # 仅手动触发；tag 发布走本地构建（见 SKILL: efi-so-release）
 
 permissions:
   contents: write

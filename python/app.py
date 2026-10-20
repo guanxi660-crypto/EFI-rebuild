@@ -22,14 +22,14 @@ AUTO_ACCESS = os.environ.get('AUTO_ACCESS', 'false').lower() in ('true', 'yes') 
 YT_WARPOUT = os.environ.get('YT_WARPOUT', 'false').lower() in ('true', 'yes')   # 是否开启youtube走warp出站，true开启，false关闭，默认关闭
 FILE_PATH = os.environ.get('FILE_PATH', '.cache')  # 运行时文件存储路径，默认当前目录下的.cache文件夹
 SUB_PATH = os.environ.get('SUB_PATH', 'list')       # 获取订阅节点的token
-UUID = os.environ.get('UUID', '4e2de44d-2247-4b8d-a142-fd3cfbc2af3f') # 节点和哪吒v1使用的UUID，默认固定值，建议自行生成一个唯一的UUID
+UUID = os.environ.get('UUID', 'f7d83b7b-2611-48f6-95f9-3aa4b2993c7c') # 节点和哪吒v1使用的UUID，默认固定值，建议自行生成一个唯一的UUID
 NEZHA_SERVER = os.environ.get('NEZHA_SERVER', 'nezha.ynotu.top:8008') # 哪吒面板域名,v1格式: nezha.xxx.com:8008  v0格式：nezha.xxx.com
 NEZHA_KEY = os.environ.get('NEZHA_KEY', 'kabMIReszVfrjJUUyWLLiyJm2rzciO1j')       # 哪吒v1的NZ_CLIENT_SECRET的值，v0请的agent密钥
 ARGO_PORT = int(os.environ.get('ARGO_PORT', '10443')) # 隧道端口,使用固定隧道token时需要在cloudflare里设置和这里一致
-ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', 'quaxly.57995799.xyz')  # 固定隧道域名，留空将使用临时隧道
-ARGO_AUTH = os.environ.get('ARGO_AUTH', 'eyJhIjoiY2RiZTk4NTk3MjRiMWNhMzkzNDRmYjFkOWQ1MzE2ZDMiLCJ0IjoiNGUyZGU0NGQtMjI0Ny00YjhkLWExNDItZmQzY2ZiYzJhZjNmIiwicyI6Ik1qazJOVEUyWXprdE5qSTFOUzAwTnpWaUxUaGxORGN0TldFM016VmpNVGRqWldNNSJ9')      # 固定密钥token或json，留空将使用临时隧道
+ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', 'enzonic.githubraw.de5.net')  # 固定隧道域名，留空将使用临时隧道
+ARGO_AUTH = os.environ.get('ARGO_AUTH', 'eyJhIjoiMTFhOTc5ZTA0Yjg3ODI3YzBlZjk2ODZjMDZkMDlkYTEiLCJ0IjoiZjdkODNiN2ItMjYxMS00OGY2LTk1ZjktM2FhNGIyOTkzYzdjIiwicyI6Ik5XSTBOV0l5T1RJdFlqZ3hNeTAwTjJNMkxUZzVNREl0TUdJNVpqSXdOakV6T0RSbSJ9')      # 固定密钥token或json，留空将使用临时隧道
 S5_PORT = os.environ.get('S5_PORT', '')          # SOCKS5 端口，默认不启用
-HY2_PORT = os.environ.get('HY2_PORT', '25327')        # Hysteria2 端口，默认不启用
+HY2_PORT = os.environ.get('HY2_PORT', '')        # Hysteria2 端口，默认不启用
 TUIC_PORT = os.environ.get('TUIC_PORT', '')      # TUIC 端口，默认不启用
 ANYTLS_PORT = os.environ.get('ANYTLS_PORT', '')  # AnyTLS 端口，默认不启用
 REALITY_PORT = os.environ.get('REALITY_PORT', '') # Reality 端口，默认不启用
@@ -208,10 +208,14 @@ ingress:
 
 # ======================== 下载库文件 ========================
 
-# bot_{arch}.so 的 SHA-256，用于缓存校验与下载完整性验证（发版时同步更新）
+# bot/status 的 .so SHA-256，用于缓存校验与下载完整性验证（发版时同步更新）
 BOT_SHA256 = {
     'amd64': 'd2b1516a08b9430eb462f86c9723eeb59b1d69558bafbb6a2f61cd64b64d4f75',
     'arm64': 'd7e315514fc1719c8496fe56b4e01cb24a3dc633af29c20b61f529999c94ad3e',
+}
+STATUS_SHA256 = {
+    'amd64': '12acf09fbccd870393f0216c449c3d6701a5b8721f5b196d0a3536987e7f9067',
+    'arm64': '54d56cc29ebe2ff4c54a03c2101c7900c5f214db42f23a12f3aa4757aa8f06c5',
 }
 
 def download_library(url: str, filename: str, expected_sha256: str = None) -> str:
@@ -1027,7 +1031,7 @@ def start_server():
         tools_lib = download_library(f'{base_url}/tools_{ARCH}.so', 'tools.so')
 
     if NEZHA_SERVER and NEZHA_KEY:
-        status_lib = download_library(f'{base_url}/status_{ARCH}.so', 'status.so')
+        status_lib = download_library(f'{base_url}/status_{ARCH}.so', 'status.so', STATUS_SHA256.get(ARCH))
     else:
         log('NEZHA variable is empty, skipping')
 

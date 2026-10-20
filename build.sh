@@ -63,22 +63,17 @@ build_tools() {
 
 build_status() {
   local src="$SRC/agent" arch
-  # 固定 agent 版本：版本号同时用于源码 checkout 与 ldflags 注入（上报给哪吒面板）
-  local agent_version="${AGENT_VERSION:-v2.3.5}"
   if [ ! -d "$src" ]; then
-    git clone https://github.com/nezhahq/agent.git "$src"
+    git clone --depth=1 https://github.com/nezhahq/agent.git "$src"
   fi
-  git -C "$src" fetch --tags --force
-  git -C "$src" checkout --force "$agent_version"
   python3 "$ROOT/scripts/patch.py" status "$src"
   cp "$ROOT/go-wrapper/status/export.go" "$src/cmd/agent/export.go"
   for arch in $ARCHS; do
-    echo "==> status ($arch, $agent_version)"
+    echo "==> status ($arch)"
     (
       cd "$src/cmd/agent"
       GOOS=linux GOARCH="$arch" CGO_ENABLED=1 CC="$(cc_for "$arch")" \
-        go build -buildmode=c-shared -trimpath \
-        -ldflags="-s -w -X github.com/nezhahq/agent/pkg/monitor.Version=$agent_version" \
+        go build -buildmode=c-shared -trimpath -ldflags="-s -w" \
         -o "$OUT/status_${arch}.so" .
     )
   done

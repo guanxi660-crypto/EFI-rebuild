@@ -12,6 +12,8 @@ import (
 	"os"
 	"sync"
 
+	singjson "github.com/sagernet/sing/common/json"
+
 	box "github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/adapter/certificate"
 	"github.com/sagernet/sing-box/adapter/endpoint"
@@ -132,12 +134,16 @@ func StartBot(payload *C.char) C.int {
 		return -2
 	}
 
-	var opts option.Options
-	if err := json.Unmarshal(configData, &opts); err != nil {
+	ctx := miniContext(context.Background())
+
+	// 必须用 sing 的上下文感知解码器：option.Rule 的自定义解码是
+	// UnmarshalJSONContext，标准 encoding/json 不会调用它，
+	// 否则 route.rules 会被解码成空规则，box.New 报 "missing conditions"。
+	opts, err := singjson.UnmarshalExtendedContext[option.Options](ctx, configData)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[ERROR] decode config failed: %v\n", err)
 		return -2
 	}
-
-	ctx := miniContext(context.Background())
 	inst, err := box.New(box.Options{
 		Context: ctx,
 		Options: opts,

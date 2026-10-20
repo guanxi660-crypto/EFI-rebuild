@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT="$ROOT/dist"
 SRC="$ROOT/.build"
 ARCHS="${ARCHS:-amd64 arm64}"
-BOT_TAGS="with_quic,with_utls,with_wireguard,with_clash_api,badlinkname,tfogo_checklinkname0"
+BOT_TAGS="with_gvisor,with_quic,with_utls,with_wireguard,with_clash_api,badlinkname,tfogo_checklinkname0"
 
 mkdir -p "$OUT" "$SRC"
 
